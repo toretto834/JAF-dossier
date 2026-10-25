@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.sqlite
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: file:/app/data/jaf.db
+      AUTH_SECRET: ${AUTH_SECRET:-change-this-development-secret-32-chars}
+      DATA_DIR: /app/data
+      EXPORT_DIR: /app/exports
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
+    volumes:
+      - jaf_sqlite_data:/app/data
+      - jaf_sqlite_exports:/app/exports
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  jaf_sqlite_data:
+  jaf_sqlite_exports:

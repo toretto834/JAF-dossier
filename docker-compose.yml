@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: jaf_dossier
+      POSTGRES_USER: jaf
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jaf_change_me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jaf -d jaf_dossier"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks: [jaf_internal]
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://jaf:${POSTGRES_PASSWORD:-jaf_change_me}@db:5432/jaf_dossier?schema=public
+      AUTH_SECRET: ${AUTH_SECRET:-change-this-development-secret-32-chars}
+      DATA_DIR: /app/data
+      EXPORT_DIR: /app/exports
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
+    volumes:
+      - jaf_data:/app/data
+      - jaf_exports:/app/exports
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [jaf_front, jaf_internal]
+
+networks:
+  jaf_front:
+  jaf_internal:
+    internal: true
+
+volumes:
+  postgres_data:
+  jaf_data:
+  jaf_exports:

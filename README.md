@@ -110,7 +110,3 @@ Le dépôt contient `package-lock.json` et `pnpm-lock.yaml`. Les images Docker u
 ## Avertissement
 
 JAF Dossier prépare un ensemble documentaire de travail. Il ne fournit pas de conseil juridique, ne prédit pas une décision et ne transforme pas automatiquement un souhait en demande juridiquement fondée. Toute synthèse, question, pièce et demande doit être vérifiée avec l’avocat.
-
-## Présentation du projet
-
-Le dossier [`media/entreaide-amicale`](media/entreaide-amicale/README.md) contient le message et les scripts de préparation utilisés pour présenter l’application au groupe **Entraide Amicale**. Les images et vidéos générées restent locales et ne sont pas publiées dans le dépôt.

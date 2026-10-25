@@ -26,7 +26,7 @@ Les modules spécialisés utilisent actuellement le noyau commun des événement
 Prérequis : Docker Desktop ou Docker Engine avec Compose.
 
 1. Copier `.env.example` vers `.env`.
-2. Remplacer `AUTH_SECRET` par une valeur aléatoire d’au moins 32 caractères et définir `POSTGRES_PASSWORD`.
+2. Définir `AUTH_SECRET` avec une valeur aléatoire d’au moins 32 caractères et `POSTGRES_PASSWORD` avec un mot de passe long et distinct. Compose refuse désormais de démarrer si l’une de ces valeurs est absente.
 3. Démarrer :
 
 ```bash
@@ -110,3 +110,7 @@ Le dépôt contient `package-lock.json` et `pnpm-lock.yaml`. Les images Docker u
 ## Avertissement
 
 JAF Dossier prépare un ensemble documentaire de travail. Il ne fournit pas de conseil juridique, ne prédit pas une décision et ne transforme pas automatiquement un souhait en demande juridiquement fondée. Toute synthèse, question, pièce et demande doit être vérifiée avec l’avocat.
+
+## Présentation du projet
+
+Le dossier [`media/entreaide-amicale`](media/entreaide-amicale/README.md) contient le message et les scripts de préparation utilisés pour présenter l’application au groupe **Entraide Amicale**. Les images et vidéos générées restent locales et ne sont pas publiées dans le dépôt.

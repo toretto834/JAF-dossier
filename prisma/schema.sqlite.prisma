@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum ValidationStatus {
+  DRAFT
+  TO_VERIFY
+  VERIFIED
+  CONTESTED
+  EXCLUDED
+}
+
+enum SourceType {
+  DIRECT
+  REPORTED
+  DOCUMENT
+  INTERPRETATION
+  UNVERIFIED
+}
+
+enum Confidentiality {
+  STANDARD
+  SENSITIVE
+  HIGHLY_SENSITIVE
+}
+
+enum RequestStatus {
+  DRAFT
+  TO_DISCUSS
+  VALIDATED
+  ABANDONED
+}
+
+enum QualitySeverity {
+  INFO
+  WARNING
+  BLOCKING
+}
+
+enum ExportStatus {
+  BUILDING
+  READY
+  FAILED
+}
+
+model User {
+  id String @id @default(cuid())
+  email String @unique
+  displayName String
+  passwordHash String
+  failedAttempts Int @default(0)
+  lockedUntil DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cases FamilyCase[]
+  events Event[]
+  documents Evidence[]
+  auditLogs AuditLog[]
+}
+
+model FamilyCase {
+  id String @id @default(cuid())
+  ownerId String
+  reference String
+  title String
+  parentIdentity String
+  otherParentIdentity String?
+  familySituation String?
+  separationDate DateTime?
+  currentResidence String?
+  parentalAuthority String?
+  lawyerName String?
+  lawyerContact String?
+  court String?
+  nextHearingAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  archivedAt DateTime?
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  children Child[]
+  procedures Procedure[]
+  events Event[]
+  evidence Evidence[]
+  allegations Allegation[]
+  requests LegalRequest[]
+  qualityAlerts QualityAlert[]
+  exports ExportVersion[]
+  auditLogs AuditLog[]
+  @@unique([ownerId, reference])
+  @@index([ownerId, updatedAt])
+}
+
+model Child {
+  id        String     @id @default(cuid())
+  caseId    String
+  firstName String
+  lastName  String?
+  birthDate DateTime?
+  notes     String?
+  case      FamilyCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  events    Event[]
+  @@index([caseId, birthDate])
+}
+
+model Procedure {
+  id           String     @id @default(cuid())
+  caseId       String
+  type         String
+  reference    String?
+  jurisdiction String?
+  status       String?
+  description  String?
+  openedAt     DateTime?
+  case         FamilyCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  events       Event[]
+  @@index([caseId])
+}
+
+model Event {
+  id String @id @default(cuid())
+  caseId String
+  createdById String
+  childId String?
+  procedureId String?
+  occurredAt DateTime
+  recordedAt DateTime @default(now())
+  type String
+  theme String
+  title String
+  description String
+  sourceType SourceType
+  sourceDetails String?
+  observedEffects String?
+  importance Int @default(1)
+  needsVerification Boolean @default(false)
+  unfavorable Boolean @default(false)
+  validationStatus ValidationStatus @default(DRAFT)
+  moduleData Json?
+  case FamilyCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  createdBy User @relation(fields: [createdById], references: [id])
+  child Child? @relation(fields: [childId], references: [id], onDelete: SetNull)
+  procedure Procedure? @relation(fields: [procedureId], references: [id], onDelete: SetNull)
+  evidenceLinks EventEvidence[]
+  requestLinks RequestEvent[]
+  allegationLinks AllegationEvent[]
+  @@index([caseId, occurredAt])
+  @@index([caseId, theme])
+}
+
+model Evidence {
+  id String @id @default(cuid())
+  caseId String
+  uploadedById String
+  pieceReference String
+  originalName String
+  storageName String
+  relativePath String
+  mimeType String
+  size Int
+  sha256 String
+  source String
+  collectedAt DateTime @default(now())
+  documentDate DateTime?
+  category String
+  confidentiality Confidentiality @default(SENSITIVE)
+  notes String?
+  createdAt DateTime @default(now())
+  case FamilyCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
+  eventLinks EventEvidence[]
+  requestLinks RequestEvidence[]
+  allegationLinks AllegationEvidence[]
+  @@unique([caseId, pieceReference])
+  @@index([caseId, sha256])
+}
+
+model EventEvidence {
+  eventId    String
+  evidenceId String
+  role       String   @default("SUPPORTING")
+  event      Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  evidence   Evidence @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  @@id([eventId, evidenceId])
+}
+
+model Allegation {
+  id                String           @id @default(cuid())
+  caseId            String
+  reference         String
+  theme             String
+  allegation        String
+  source            String
+  response          String?
+  verificationPoint String?
+  unfavorableToUser Boolean          @default(false)
+  contested         Boolean          @default(false)
+  validationStatus  ValidationStatus @default(DRAFT)
+  createdAt         DateTime         @default(now())
+  case              FamilyCase       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  eventLinks        AllegationEvent[]
+  evidenceLinks     AllegationEvidence[]
+  @@unique([caseId, reference])
+}
+
+model AllegationEvent {
+  allegationId String
+  eventId      String
+  allegation   Allegation @relation(fields: [allegationId], references: [id], onDelete: Cascade)
+  event        Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  @@id([allegationId, eventId])
+}
+
+model AllegationEvidence {
+  allegationId String
+  evidenceId   String
+  allegation   Allegation @relation(fields: [allegationId], references: [id], onDelete: Cascade)
+  evidence     Evidence   @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  @@id([allegationId, evidenceId])
+}
+
+model LegalRequest {
+  id String @id @default(cuid())
+  caseId String
+  title String
+  objective String
+  currentSituation String?
+  difficulty String?
+  requestedChange String?
+  childImpact String?
+  alternatives String?
+  lawyerArbitration String?
+  status RequestStatus @default(DRAFT)
+  createdAt DateTime @default(now())
+  case FamilyCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  eventLinks RequestEvent[]
+  evidenceLinks RequestEvidence[]
+  @@index([caseId])
+}
+model RequestEvent {
+  requestId       String
+  eventId         String
+  relevance       String?
+  isContradictory Boolean      @default(false)
+  request         LegalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  event           Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  @@id([requestId, eventId])
+}
+
+model RequestEvidence {
+  requestId  String
+  evidenceId String
+  request    LegalRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  evidence   Evidence     @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+  @@id([requestId, evidenceId])
+}
+
+model QualityAlert {
+  id          String          @id @default(cuid())
+  caseId      String
+  entityType  String
+  entityId    String?
+  ruleCode    String
+  severity    QualitySeverity
+  explanation String
+  resolvedAt  DateTime?
+  createdAt   DateTime        @default(now())
+  case        FamilyCase      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  @@index([caseId, resolvedAt])
+}
+
+model ExportVersion {
+  id            String       @id @default(cuid())
+  caseId        String
+  versionNumber Int
+  fileName      String
+  relativePath  String
+  sha256        String
+  status        ExportStatus @default(BUILDING)
+  manifest      Json
+  createdAt     DateTime     @default(now())
+  case          FamilyCase   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  @@unique([caseId, versionNumber])
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  userId     String
+  caseId     String?
+  action     String
+  entityType String
+  entityId   String?
+  result     String      @default("SUCCESS")
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id])
+  case       FamilyCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  @@index([userId, createdAt])
+}

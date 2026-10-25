@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: jaf_dossier
       POSTGRES_USER: jaf
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jaf_change_me}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Définissez POSTGRES_PASSWORD dans le fichier .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -22,8 +22,8 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgresql://jaf:${POSTGRES_PASSWORD:-jaf_change_me}@db:5432/jaf_dossier?schema=public
-      AUTH_SECRET: ${AUTH_SECRET:-change-this-development-secret-32-chars}
+      DATABASE_URL: postgresql://jaf:${POSTGRES_PASSWORD:?Définissez POSTGRES_PASSWORD dans le fichier .env}@db:5432/jaf_dossier?schema=public
+      AUTH_SECRET: ${AUTH_SECRET:?Définissez AUTH_SECRET dans le fichier .env}
       DATA_DIR: /app/data
       EXPORT_DIR: /app/exports
       MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}

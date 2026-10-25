@@ -1,0 +1,7 @@
+Bonjour à tous 👋
+
+Je viens de créer « JAF Dossier », un outil local pensé pour transformer des documents éparpillés en un dossier clair : chronologie, pièces datées, réponses aux allégations, demandes à discuter avec l’avocat et export complet.
+
+Les données restent sur l’ordinateur et l’outil ne remplace pas un avocat. Le projet est open source et fonctionne avec Docker : quelques connaissances techniques sont nécessaires pour l’installer.
+
+Si cela peut aider des membres d’Entraide Amicale, je peux partager le dépôt GitHub.

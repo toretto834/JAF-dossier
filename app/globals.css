@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; --forest:#244d3a; --ink:#17211b; --cream:#f6f3ec; }
+* { box-sizing: border-box; }
+html { background: var(--cream); }
+body { margin: 0; color: var(--ink); background: var(--cream); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+button, input, textarea, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+:focus-visible { outline: 3px solid rgba(217,155,69,.5); outline-offset: 2px; }
+::selection { background: #c9dfd0; }
+.scrollbar-thin { scrollbar-width: thin; scrollbar-color: #b8c4bc transparent; }
+.field { @apply w-full rounded-xl border border-line bg-white px-3.5 py-3 text-sm text-ink shadow-sm transition placeholder:text-stone-400 focus:border-forest focus:outline-none focus:ring-2 focus:ring-forest/10; }
+.label { @apply mb-1.5 block text-xs font-semibold uppercase tracking-[.08em] text-stone-600; }
+.btn-primary { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-forest px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#193c2c] disabled:hover:bg-forest; }
+.btn-secondary { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-stone-400 hover:bg-stone-50; }
+.card { @apply rounded-2xl border border-line bg-white shadow-soft; }
+.badge { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold; }
